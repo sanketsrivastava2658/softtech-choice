@@ -1,0 +1,151 @@
+@import "tailwindcss";
+
+/*
+  Outbound Terminal — design tokens (see DESIGN.md).
+  Dark is the default surface; light ships too. Runtime theme switch via the
+  `data-theme` attribute on <html>, so the white-label hook is a CSS-variable swap.
+  Semantic tokens live as CSS vars; @theme inline maps them to Tailwind utilities
+  (bg-bg, text-muted, text-amber, font-display, ...) that resolve at runtime.
+*/
+
+:root,
+html[data-theme="dark"] {
+  --bg: #15130f;
+  --surface: #1e1b16;
+  --elevated: #26221b;
+  --hover: #2e2920;
+  --line: rgba(242, 237, 227, 0.1);
+  --line-strong: rgba(242, 237, 227, 0.18);
+  --text: #f2ede3;
+  --muted: #a39b8b;
+  --faint: #6e665a;
+  --amber: #e8b04b;
+  --amber-deep: #c8902b;
+  --amber-dim: rgba(232, 176, 75, 0.14);
+  --mint: #5fd3a3;
+  --mint-line: rgba(95, 211, 163, 0.3);
+  --red: #e5604d;
+  --red-line: rgba(229, 96, 77, 0.3);
+  --orange: #e8843b;
+  --orange-line: rgba(232, 132, 59, 0.3);
+  --info: #6e8bb5;
+  --grid: rgba(242, 237, 227, 0.035);
+  --amber-ink: #1a1712;
+}
+
+html[data-theme="light"] {
+  --bg: #f6f1e7;
+  --surface: #fffcf5;
+  --elevated: #fbf6ec;
+  --hover: #f1eadb;
+  --line: rgba(26, 23, 18, 0.1);
+  --line-strong: rgba(26, 23, 18, 0.18);
+  --text: #1a1712;
+  --muted: #6b6356;
+  --faint: #9a9183;
+  --amber: #b8801a;
+  --amber-deep: #946514;
+  --amber-dim: rgba(184, 128, 26, 0.12);
+  --mint: #1f9d6b;
+  --mint-line: rgba(31, 157, 107, 0.3);
+  --red: #c8412e;
+  --red-line: rgba(200, 65, 46, 0.3);
+  --orange: #c7661e;
+  --orange-line: rgba(199, 102, 30, 0.3);
+  --info: #4a6791;
+  --grid: rgba(26, 23, 18, 0.035);
+  --amber-ink: #fffcf5;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-elevated: var(--elevated);
+  --color-hover: var(--hover);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-amber: var(--amber);
+  --color-amber-deep: var(--amber-deep);
+  --color-amber-dim: var(--amber-dim);
+  --color-amber-ink: var(--amber-ink);
+  --color-mint: var(--mint);
+  --color-mint-line: var(--mint-line);
+  --color-red: var(--red);
+  --color-red-line: var(--red-line);
+  --color-orange: var(--orange);
+  --color-orange-line: var(--orange-line);
+  --color-info: var(--info);
+
+  --font-display: var(--font-display-stack);
+  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  /* radii (DESIGN.md): chips/inputs/buttons small, cards/tables medium, shell large */
+  --radius-chip: 5px;
+  --radius-input: 7px;
+  --radius-card: 11px;
+  --radius-shell: 14px;
+}
+
+:root {
+  --font-display-stack: "Cabinet Grotesk", system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  letter-spacing: -0.003em;
+  /* faint hairline grid behind the product — the only decoration */
+  background-image: linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* Every number renders tabular mono — the terminal signature (DESIGN.md). */
+.num {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-feature-settings: "tnum" 1, "zero" 1;
+  letter-spacing: -0.02em;
+}
+
+/* live "synced" pulse dot */
+.pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--mint);
+  box-shadow: 0 0 0 0 rgba(95, 211, 163, 0.5);
+  animation: pulse 2.4s infinite;
+}
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(95, 211, 163, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 7px rgba(95, 211, 163, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(95, 211, 163, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse {
+    animation: none;
+  }
+}

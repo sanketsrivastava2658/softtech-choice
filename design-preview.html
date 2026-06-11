@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Outbound Terminal — Design System Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@500,700,800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#15130F; --surface:#1E1B16; --elevated:#26221B; --hover:#2E2920;
+  --line:rgba(242,237,227,.10); --line-strong:rgba(242,237,227,.18);
+  --text:#F2EDE3; --muted:#A39B8B; --faint:#6E665A;
+  --amber:#E8B04B; --amber-dim:rgba(232,176,75,.14); --amber-deep:#C8902B;
+  --mint:#5FD3A3; --red:#E5604D; --orange:#E8843B; --info:#6E8BB5;
+  --grid:rgba(242,237,227,.035);
+  --display:'Cabinet Grotesk',system-ui,sans-serif;
+  --sans:'Geist',system-ui,sans-serif;
+  --mono:'Geist Mono',ui-monospace,monospace;
+}
+html[data-theme="light"]{
+  --bg:#F6F1E7; --surface:#FFFCF5; --elevated:#FBF6EC; --hover:#F1EADB;
+  --line:rgba(26,23,18,.10); --line-strong:rgba(26,23,18,.18);
+  --text:#1A1712; --muted:#6B6356; --faint:#9A9183;
+  --amber:#B8801A; --amber-dim:rgba(184,128,26,.12); --amber-deep:#946514;
+  --mint:#1F9D6B; --red:#C8412E; --orange:#C7661E; --info:#4A6791;
+  --grid:rgba(26,23,18,.035);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+body{
+  background:var(--bg); color:var(--text); font-family:var(--sans);
+  font-size:14px; line-height:1.5; letter-spacing:-0.003em;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:32px 32px;
+}
+.num{font-family:var(--mono);font-feature-settings:"tnum" 1,"zero" 1;letter-spacing:-0.02em}
+.wrap{max-width:1180px;margin:0 auto;padding:0 28px}
+.hairline{border:1px solid var(--line)}
+
+/* top bar */
+.topbar{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.topbar .wrap{display:flex;align-items:center;gap:16px;height:56px}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:800;font-size:16px;letter-spacing:-0.02em}
+.brand .mark{width:22px;height:22px;border-radius:5px;background:var(--amber);display:grid;place-items:center;color:#15130F;font-family:var(--mono);font-weight:600;font-size:13px}
+.brand small{color:var(--faint);font-family:var(--mono);font-weight:400;font-size:11px;letter-spacing:0}
+.spacer{flex:1}
+.toggle{font-family:var(--mono);font-size:12px;color:var(--muted);background:var(--surface);border:1px solid var(--line);padding:6px 12px;border-radius:7px;cursor:pointer}
+.toggle:hover{border-color:var(--line-strong);color:var(--text)}
+
+/* section scaffold */
+section{padding:64px 0}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);margin-bottom:14px}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(34px,5vw,54px);line-height:1.02;letter-spacing:-0.03em;max-width:18ch}
+h2{font-family:var(--display);font-weight:700;font-size:26px;letter-spacing:-0.02em;margin-bottom:6px}
+.lead{color:var(--muted);font-size:16px;max-width:62ch;margin-top:18px;line-height:1.6}
+.sub{color:var(--faint);font-size:13px;margin-bottom:28px}
+
+/* ===== HERO: the dashboard mockup ===== */
+.hero{padding:54px 0 28px}
+.app{border:1px solid var(--line-strong);border-radius:14px;overflow:hidden;background:var(--surface);box-shadow:0 30px 80px -40px rgba(0,0,0,.6)}
+.app-grid{display:grid;grid-template-columns:188px 1fr 264px}
+@media(max-width:920px){.app-grid{grid-template-columns:1fr}.rail,.replies{display:none}}
+.rail{border-right:1px solid var(--line);padding:16px 12px;background:var(--bg)}
+.rail .who{display:flex;align-items:center;gap:9px;padding:6px 8px;margin-bottom:18px}
+.rail .who .av{width:26px;height:26px;border-radius:6px;background:var(--elevated);border:1px solid var(--line);display:grid;place-items:center;font-family:var(--mono);font-size:11px;color:var(--amber)}
+.rail .who b{font-size:12.5px}
+.rail .who span{display:block;color:var(--faint);font-size:11px;font-family:var(--mono)}
+.navlabel{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);padding:0 8px;margin:14px 0 6px}
+.nav a{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:7px;color:var(--muted);font-size:13px;text-decoration:none;margin-bottom:1px}
+.nav a .ic{width:15px;height:15px;opacity:.8}
+.nav a.active{background:var(--amber-dim);color:var(--text)}
+.nav a.active .ic{color:var(--amber);opacity:1}
+.nav a:hover:not(.active){background:var(--hover);color:var(--text)}
+.nav a .ct{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--faint)}
+
+.main{padding:18px 20px 22px;min-width:0}
+.crumb{display:flex;align-items:center;gap:8px;color:var(--faint);font-size:12px;font-family:var(--mono);margin-bottom:14px}
+.crumb b{color:var(--text)}
+.pulse{width:6px;height:6px;border-radius:50%;background:var(--mint);box-shadow:0 0 0 0 rgba(95,211,163,.5);animation:pulse 2.4s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(95,211,163,.5)}70%{box-shadow:0 0 0 7px rgba(95,211,163,0)}100%{box-shadow:0 0 0 0 rgba(95,211,163,0)}}
+
+/* command strip */
+.strip{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:20px}
+.metric{background:var(--surface);padding:13px 14px 12px}
+.metric .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);display:flex;align-items:center;gap:6px}
+.metric .v{font-family:var(--mono);font-weight:500;font-size:26px;letter-spacing:-0.03em;margin-top:9px;line-height:1}
+.metric .d{font-family:var(--mono);font-size:11px;margin-top:7px;display:flex;align-items:center;gap:5px}
+.up{color:var(--mint)} .down{color:var(--red)}
+.metric.hot .v{color:var(--amber)}
+.spark{height:18px;margin-top:9px;display:block;width:100%}
+
+/* table */
+.tablecard{border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.th{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-bottom:1px solid var(--line);background:var(--bg)}
+.th h3{font-size:13px;font-weight:600}
+.th .filters{display:flex;gap:6px}
+.chip{font-family:var(--mono);font-size:11px;color:var(--muted);border:1px solid var(--line);padding:3px 9px;border-radius:20px;cursor:pointer}
+.chip.on{border-color:var(--amber);color:var(--amber);background:var(--amber-dim)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{font-family:var(--mono);font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);text-align:right;padding:9px 14px;font-weight:500;border-bottom:1px solid var(--line)}
+thead th:first-child{text-align:left}
+tbody td{padding:11px 14px;text-align:right;border-bottom:1px solid var(--line);vertical-align:middle}
+tbody td:first-child{text-align:left}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--hover)}
+.cname{display:flex;align-items:center;gap:9px}
+.dot{width:7px;height:7px;border-radius:2px;flex:none}
+.dot.live{background:var(--mint)} .dot.warm{background:var(--orange)} .dot.paused{background:var(--faint)}
+.cname b{font-weight:500;font-size:13px}
+.cname span{display:block;color:var(--faint);font-family:var(--mono);font-size:11px}
+.bar{display:inline-block;width:54px;height:5px;border-radius:3px;background:var(--elevated);overflow:hidden;vertical-align:middle;margin-left:8px}
+.bar i{display:block;height:100%;background:var(--amber)}
+.pos{color:var(--mint)}
+.badge{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:5px;border:1px solid var(--line)}
+.badge.live{color:var(--mint);border-color:rgba(95,211,163,.3)}
+.badge.warm{color:var(--orange);border-color:rgba(232,132,59,.3)}
+.badge.paused{color:var(--faint)}
+
+/* replies panel */
+.replies{border-left:1px solid var(--line);padding:16px 14px;background:var(--bg)}
+.replies .rh{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.replies .rh h4{font-size:12.5px;font-weight:600}
+.replies .rh .ct{font-family:var(--mono);font-size:11px;color:var(--amber);background:var(--amber-dim);padding:2px 7px;border-radius:20px}
+.reply{padding:11px 0;border-bottom:1px solid var(--line)}
+.reply:last-child{border-bottom:none}
+.reply .top{display:flex;align-items:center;gap:7px;margin-bottom:5px}
+.reply .av{width:20px;height:20px;border-radius:5px;background:var(--elevated);border:1px solid var(--line);font-family:var(--mono);font-size:10px;display:grid;place-items:center;color:var(--muted)}
+.reply b{font-size:12.5px;font-weight:500}
+.reply .t{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--faint)}
+.reply p{color:var(--muted);font-size:12px;line-height:1.45;padding-left:27px}
+.reply .tag{margin:6px 0 0 27px;display:inline-block;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--mint);border:1px solid rgba(95,211,163,.3);padding:1px 6px;border-radius:4px}
+.reply .tag.meet{color:var(--amber);border-color:rgba(232,176,75,.35);background:var(--amber-dim)}
+
+/* spec grids */
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.card{border:1px solid var(--line);border-radius:11px;background:var(--surface);padding:20px}
+.card h3{font-size:14px;margin-bottom:4px}
+.card .meta{font-family:var(--mono);font-size:11px;color:var(--faint);margin-bottom:14px}
+
+/* type specimens */
+.spec{border:1px solid var(--line);border-radius:11px;background:var(--surface);padding:22px 24px;margin-bottom:14px}
+.spec .tag{font-family:var(--mono);font-size:11px;color:var(--amber);display:flex;justify-content:space-between;margin-bottom:14px}
+.spec .tag span{color:var(--faint)}
+.disp{font-family:var(--display);font-weight:800;font-size:40px;letter-spacing:-0.03em;line-height:1}
+.bodyspec{font-size:15px;color:var(--text);max-width:64ch;line-height:1.6}
+.monospec{font-family:var(--mono);font-size:24px;letter-spacing:-0.02em}
+
+/* color swatches */
+.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.sw{border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.sw .chiparea{height:62px}
+.sw .info{padding:9px 11px;background:var(--surface)}
+.sw .info b{font-size:12px;font-weight:500}
+.sw .info code{display:block;font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:2px}
+
+/* components row */
+.btn{font-family:var(--sans);font-weight:500;font-size:13px;border-radius:8px;padding:8px 15px;cursor:pointer;border:1px solid transparent}
+.btn.primary{background:var(--amber);color:#1A1712;font-weight:600}
+.btn.primary:hover{background:var(--amber-deep)}
+.btn.secondary{background:var(--elevated);color:var(--text);border-color:var(--line)}
+.btn.secondary:hover{border-color:var(--line-strong)}
+.btn.ghost{background:transparent;color:var(--muted)}
+.btn.ghost:hover{color:var(--text);background:var(--hover)}
+.inp{font-family:var(--sans);font-size:13px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 12px;color:var(--text);width:100%}
+.inp:focus{outline:none;border-color:var(--amber);box-shadow:0 0 0 3px var(--amber-dim)}
+.alert{display:flex;gap:10px;align-items:flex-start;padding:11px 13px;border-radius:9px;font-size:12.5px;border:1px solid var(--line)}
+.alert .ico{font-family:var(--mono);font-weight:600;font-size:13px;flex:none;margin-top:1px}
+.alert.ok{border-color:rgba(95,211,163,.3)} .alert.ok .ico{color:var(--mint)}
+.alert.warn{border-color:rgba(232,132,59,.3)} .alert.warn .ico{color:var(--orange)}
+.alert.err{border-color:rgba(229,96,77,.3)} .alert.err .ico{color:var(--red)}
+
+.foot{border-top:1px solid var(--line);padding:30px 0;color:var(--faint);font-family:var(--mono);font-size:12px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.kv{display:flex;gap:24px;flex-wrap:wrap}
+.kv div span{color:var(--text)}
+.divider{height:1px;background:var(--line);margin:0}
+</style>
+</head>
+<body>
+
+<div class="topbar"><div class="wrap">
+  <div class="brand"><span class="mark">◆</span> Northbeam <small>/ outbound terminal</small></div>
+  <div class="spacer"></div>
+  <button class="toggle" onclick="tg()">◑ <span id="tglabel">Light mode</span></button>
+</div></div>
+
+<div class="wrap">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="eyebrow">Design system preview · client dashboard</div>
+    <h1>The terminal your clients log into.</h1>
+    <p class="lead">A live render of the proposed system applied to the real screen: warm-dark surfaces, a single brass-amber accent, every number in tabular mono. Built as the deliberate opposite of the blue/purple/light category, so the agency looks like a product company, not a Smartlead reseller. Toggle light mode top-right — both ship.</p>
+  </section>
+
+  <!-- THE APP -->
+  <div class="app"><div class="app-grid">
+
+    <!-- left rail -->
+    <aside class="rail">
+      <div class="who"><div class="av">AB</div><div><b>Acme B2B</b><span>client · workspace</span></div></div>
+      <div class="navlabel">Outbound</div>
+      <nav class="nav">
+        <a class="active"><span class="ic">▦</span> Overview</a>
+        <a><span class="ic">◷</span> Campaigns <span class="ct">7</span></a>
+        <a><span class="ic">◌</span> Leads <span class="ct">12.4k</span></a>
+        <a><span class="ic">✉</span> Inbox <span class="ct">23</span></a>
+      </nav>
+      <div class="navlabel">Insight</div>
+      <nav class="nav">
+        <a><span class="ic">◈</span> Deliverability</a>
+        <a><span class="ic">▤</span> Reports</a>
+        <a><span class="ic">◆</span> Meetings <span class="ct">9</span></a>
+      </nav>
+    </aside>
+
+    <!-- main -->
+    <main class="main">
+      <div class="crumb"><span>Overview</span> <span>/</span> <b>Last 30 days</b> <span style="margin-left:auto;display:flex;align-items:center;gap:6px"><span class="pulse"></span>Live · synced 14s ago</span></div>
+
+      <!-- command strip -->
+      <div class="strip">
+        <div class="metric"><div class="k">Emails Sent</div><div class="v">48,210</div>
+          <svg class="spark" viewBox="0 0 100 18" preserveAspectRatio="none"><polyline fill="none" stroke="#A39B8B" stroke-width="1.5" points="0,14 14,12 28,13 42,9 56,10 70,6 84,7 100,3"/></svg></div>
+        <div class="metric"><div class="k">Open Rate</div><div class="v">61.4%</div>
+          <svg class="spark" viewBox="0 0 100 18" preserveAspectRatio="none"><polyline fill="none" stroke="#A39B8B" stroke-width="1.5" points="0,8 14,9 28,7 42,8 56,5 70,7 84,4 100,5"/></svg></div>
+        <div class="metric hot"><div class="k">Reply Rate</div><div class="v">7.8%</div>
+          <svg class="spark" viewBox="0 0 100 18" preserveAspectRatio="none"><polyline fill="none" stroke="#E8B04B" stroke-width="1.5" points="0,13 14,11 28,12 42,8 56,7 70,8 84,4 100,2"/></svg></div>
+        <div class="metric"><div class="k">Positive</div><div class="v" style="color:var(--mint)">312</div>
+          <div class="d up">▲ <span class="num">+18%</span> vs prev</div></div>
+        <div class="metric"><div class="k">Meetings</div><div class="v">29</div>
+          <div class="d up">▲ <span class="num">+6</span> this wk</div></div>
+      </div>
+
+      <!-- campaign table -->
+      <div class="tablecard">
+        <div class="th"><h3>Campaigns</h3>
+          <div class="filters"><span class="chip on">All</span><span class="chip">Live</span><span class="chip">Warming</span><span class="chip">Paused</span></div></div>
+        <table>
+          <thead><tr><th>Campaign</th><th>Status</th><th>Sent</th><th>Open</th><th>Reply</th><th>Positive</th><th>Booked</th></tr></thead>
+          <tbody>
+            <tr><td><div class="cname"><span class="dot live"></span><div><b>Q2 — SaaS Founders</b><span>seq · 5 steps</span></div></div></td>
+              <td><span class="badge live">Live</span></td><td class="num">14,920</td><td class="num">63.1%</td>
+              <td class="num">8.4%<span class="bar"><i style="width:84%"></i></span></td><td class="num pos">128</td><td class="num">11</td></tr>
+            <tr><td><div class="cname"><span class="dot live"></span><div><b>Agency Owners — US</b><span>seq · 4 steps</span></div></div></td>
+              <td><span class="badge live">Live</span></td><td class="num">11,305</td><td class="num">59.7%</td>
+              <td class="num">7.1%<span class="bar"><i style="width:71%"></i></span></td><td class="num pos">79</td><td class="num">8</td></tr>
+            <tr><td><div class="cname"><span class="dot warm"></span><div><b>RevOps — Mid-Market</b><span>warming · day 6</span></div></div></td>
+              <td><span class="badge warm">Warming</span></td><td class="num">3,840</td><td class="num">66.0%</td>
+              <td class="num">9.2%<span class="bar"><i style="width:92%"></i></span></td><td class="num pos">52</td><td class="num">6</td></tr>
+            <tr><td><div class="cname"><span class="dot live"></span><div><b>Ecom DTC — Repeat</b><span>seq · 6 steps</span></div></div></td>
+              <td><span class="badge live">Live</span></td><td class="num">12,460</td><td class="num">57.2%</td>
+              <td class="num">6.3%<span class="bar"><i style="width:63%"></i></span></td><td class="num pos">41</td><td class="num">3</td></tr>
+            <tr><td><div class="cname"><span class="dot paused"></span><div><b>Fintech — Series B</b><span>paused · low inbox</span></div></div></td>
+              <td><span class="badge paused">Paused</span></td><td class="num">5,685</td><td class="num">48.9%</td>
+              <td class="num">4.0%<span class="bar"><i style="width:40%"></i></span></td><td class="num pos">12</td><td class="num">1</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+
+    <!-- replies -->
+    <aside class="replies">
+      <div class="rh"><h4>Positive replies</h4><span class="ct">+7 today</span></div>
+      <div class="reply"><div class="top"><span class="av">JK</span><b>Jordan Kane</b><span class="t">2m</span></div>
+        <p>"This is timely — we're actively scoping outbound for Q3. Can you do Thursday?"</p><span class="tag meet">↳ meeting</span></div>
+      <div class="reply"><div class="top"><span class="av">PM</span><b>Priya Menon</b><span class="t">19m</span></div>
+        <p>"Interested. Send over a few times that work and I'll get my ops lead on it."</p><span class="tag">interested</span></div>
+      <div class="reply"><div class="top"><span class="av">DS</span><b>Dan Sorensen</b><span class="t">1h</span></div>
+        <p>"Not right now but circle back in September — budget opens then."</p><span class="tag" style="color:var(--orange);border-color:rgba(232,132,59,.3)">later</span></div>
+    </aside>
+
+  </div></div>
+
+  <p class="sub" style="margin-top:14px">Same skeleton powers the <b style="color:var(--text)">Agency Admin</b> panel — swap the workspace switcher for an all-clients rollup, the command strip aggregates global sending volume and team performance, the table becomes client-wise.</p>
+
+  <hr class="divider" style="margin:40px 0">
+
+  <!-- TYPOGRAPHY -->
+  <section style="padding:24px 0">
+    <div class="eyebrow">Typography</div>
+    <h2>Three voices. Zero Inter.</h2>
+    <p class="sub">Grotesk for confidence, Geist for legibility, mono for every number. The mono numerals are the signature.</p>
+
+    <div class="spec"><div class="tag">Cabinet Grotesk · 800 <span>Display / headings / page titles</span></div>
+      <div class="disp">Meetings booked, not emails sent.</div></div>
+    <div class="spec"><div class="tag">Geist · 400–600 <span>Body / UI / labels / buttons</span></div>
+      <p class="bodyspec">Clients judge the entire engagement by the dashboard they log into. The interface has to read as serious software the moment it loads — clear hierarchy, honest numbers, no decoration competing with the data. Geist holds up at 12px in dense tables and still feels modern at 16px in prose.</p></div>
+    <div class="spec"><div class="tag">Geist Mono · 400–500 · tnum <span>All data: metrics, %, counts, timestamps, IDs, emails</span></div>
+      <div class="monospec">48,210 sent · 7.8% reply · 312 positive · 29 booked · 14s ago · cmp_9f3a2</div></div>
+  </section>
+
+  <hr class="divider" style="margin:24px 0 40px">
+
+  <!-- COLOR -->
+  <section style="padding:0 0 24px">
+    <div class="eyebrow">Color</div>
+    <h2>Warm dark. One accent does the work.</h2>
+    <p class="sub">The category is blue and violet. We take gold. Blue is demoted to a semantic-only "info" tone — never brand.</p>
+    <div class="swatches">
+      <div class="sw"><div class="chiparea" style="background:#15130F"></div><div class="info"><b>Background</b><code>#15130F</code></div></div>
+      <div class="sw"><div class="chiparea" style="background:#1E1B16"></div><div class="info"><b>Surface</b><code>#1E1B16</code></div></div>
+      <div class="sw"><div class="chiparea" style="background:#26221B"></div><div class="info"><b>Elevated</b><code>#26221B</code></div></div>
+      <div class="sw"><div class="chiparea" style="background:#E8B04B"></div><div class="info"><b>Amber · brand</b><code>#E8B04B</code></div></div>
+      <div class="sw"><div class="chiparea" style="background:#F2EDE3"></div><div class="info"><b>Text</b><code>#F2EDE3</code></div></div>
+      <div class="sw"><div class="chiparea" style="background:#A39B8B"></div><div class="info"><b>Muted</b><code>#A39B8B</code></div></div>
+      <div class="sw"><div class="chiparea" style="background:#5FD3A3"></div><div class="info"><b>Positive</b><code>#5FD3A3</code></div></div>
+      <div class="sw"><div class="chiparea" style="background:#E8843B"></div><div class="info"><b>Warning</b><code>#E8843B</code></div></div>
+      <div class="sw"><div class="chiparea" style="background:#E5604D"></div><div class="info"><b>Error</b><code>#E5604D</code></div></div>
+      <div class="sw"><div class="chiparea" style="background:#6E8BB5"></div><div class="info"><b>Info (semantic)</b><code>#6E8BB5</code></div></div>
+    </div>
+  </section>
+
+  <hr class="divider" style="margin:40px 0">
+
+  <!-- COMPONENTS -->
+  <section style="padding:0 0 24px">
+    <div class="eyebrow">Components</div>
+    <h2>The kit in this skin.</h2>
+    <div class="cols" style="margin-top:22px">
+      <div class="card"><h3>Buttons</h3><div class="meta">amber primary · quiet rest</div>
+        <div style="display:flex;gap:9px;flex-wrap:wrap"><button class="btn primary">Export report</button><button class="btn secondary">Filter</button><button class="btn ghost">Cancel</button></div></div>
+      <div class="card"><h3>Input · focus</h3><div class="meta">amber ring, no glow soup</div>
+        <input class="inp" placeholder="Search leads, replies, domains…"></div>
+      <div class="card"><h3>Status badges</h3><div class="meta">mono · semantic borders</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><span class="badge live">Live</span><span class="badge warm">Warming</span><span class="badge paused">Paused</span></div></div>
+      <div class="card"><h3>Alerts</h3><div class="meta">deliverability signals</div>
+        <div style="display:grid;gap:8px">
+          <div class="alert ok"><span class="ico">✓</span><div>Inbox health green across 14 mailboxes.</div></div>
+          <div class="alert warn"><span class="ico">!</span><div>2 mailboxes near daily cap — throttling.</div></div>
+          <div class="alert err"><span class="ico">✕</span><div>Domain blacklist hit on send-acme.com.</div></div>
+        </div></div>
+    </div>
+  </section>
+
+  <div class="foot">
+    <div>NORTHBEAM · OUTBOUND TERMINAL · v0.1</div>
+    <div class="kv">
+      <div>type <span>Cabinet Grotesk / Geist / Geist Mono</span></div>
+      <div>accent <span>#E8B04B</span></div>
+      <div>mode <span>dark-first</span></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function tg(){
+  var h=document.documentElement, l=h.getAttribute('data-theme')==='light';
+  h.setAttribute('data-theme', l?'dark':'light');
+  document.getElementById('tglabel').textContent = l? 'Light mode':'Dark mode';
+}
+</script>
+</body>
+</html>
