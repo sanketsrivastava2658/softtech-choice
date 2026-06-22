@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Softtech Choice — Performance Metrics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --navy:#0b0b4d;            /* top bar */
+    --page:#ffffff;
+    --ink:#111827;            /* primary text */
+    --muted:#6b7280;          /* secondary text */
+    --faint:#9ca3af;          /* tertiary text */
+    --line:#e8e9ee;           /* hairlines / borders */
+    --rail:#ffffff;
+    --purple:#7c3aed;
+    --indigo:#6366f1;
+    --teal:#0d9488;
+    --green:#16a34a;
+    --red:#ef4444;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    background:var(--page);
+    color:var(--ink);
+    font-size:14px;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    height:52px;
+    background:var(--navy);
+    display:flex;
+    align-items:center;
+    gap:18px;
+    padding:0 20px;
+    color:#fff;
+    position:sticky;top:0;z-index:30;
+  }
+  .topbar .hamb{display:flex;flex-direction:column;gap:4px;cursor:pointer;padding:4px}
+  .topbar .hamb span{display:block;width:20px;height:2px;background:#fff;border-radius:2px}
+  .brand{font-size:19px;font-weight:700;letter-spacing:.2px}
+  .topbar .right{margin-left:auto;display:flex;align-items:center;gap:6px;cursor:pointer}
+  .avatar{
+    width:30px;height:30px;border-radius:50%;
+    background:linear-gradient(135deg,#a5b4fc,#818cf8);
+    border:2px solid rgba(255,255,255,.35);
+  }
+  .chev{color:#fff;opacity:.85}
+
+  /* ---------- Shell ---------- */
+  .shell{display:flex;min-height:calc(100vh - 52px)}
+
+  /* ---------- Sidebar ---------- */
+  .sidebar{
+    width:190px;flex:none;background:var(--rail);
+    border-right:1px solid var(--line);
+    padding:14px 10px;
+  }
+  .nav-item{
+    display:flex;align-items:center;gap:12px;
+    padding:10px 12px;border-radius:8px;
+    color:#374151;font-weight:500;font-size:13.5px;
+    cursor:pointer;margin-bottom:2px;
+  }
+  .nav-item:hover{background:#f6f5fb}
+  .nav-item svg{color:#9ca3af;flex:none}
+
+  /* ---------- Main ---------- */
+  .main{flex:1;min-width:0;padding:18px 26px 40px;background:#fff}
+
+  .toolbar{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+  .tab{
+    font-size:14px;font-weight:600;color:var(--purple);
+    padding-bottom:8px;border-bottom:2.5px solid var(--purple);
+  }
+  .toolbar .spacer{margin-left:auto}
+  .pill{
+    display:inline-flex;align-items:center;gap:8px;
+    border:1px solid var(--line);border-radius:8px;
+    padding:8px 12px;font-size:13px;color:#374151;background:#fff;
+    cursor:pointer;font-weight:500;
+  }
+  .pill svg{color:#9ca3af}
+
+  /* ---------- Success banner ---------- */
+  .banner{
+    display:flex;align-items:center;gap:12px;
+    background:#ecfdf3;border-left:4px solid #10b981;
+    border-radius:8px;padding:13px 16px;margin-bottom:20px;
+    color:#374151;font-size:14px;
+  }
+  .banner .check{
+    width:22px;height:22px;border-radius:50%;background:#10b981;
+    display:grid;place-items:center;flex:none;
+  }
+  .banner .x{margin-left:auto;color:#9ca3af;cursor:pointer;display:flex}
+
+  /* ---------- Stat cards ---------- */
+  .cards{
+    display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-bottom:30px;
+  }
+  .card{
+    border:1px solid var(--line);border-radius:12px;
+    padding:16px 18px 18px;background:#fff;min-height:118px;
+  }
+  .card .head{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+  .card .head .ic{display:flex}
+  .card .head .label{font-size:13.5px;font-weight:600;color:#374151}
+  .card .head .info{color:#cbd0d8;display:flex}
+  .card .big{font-size:34px;font-weight:700;line-height:1;letter-spacing:-.5px}
+  .card .sub{margin-top:14px;font-size:12.5px;color:var(--muted)}
+  .card .sub b{color:#374151;font-weight:600}
+
+  .card.purple{background:linear-gradient(135deg,#f7f3ff 0%,#ffffff 70%);border-color:#efe7fd}
+  .card.purple .ic,.card.purple .big{color:var(--purple)}
+  .card.teal{background:linear-gradient(135deg,#eefcfa 0%,#ffffff 70%);border-color:#d8f3ef}
+  .card.teal .ic,.card.teal .big{color:var(--teal)}
+  .card.green{background:linear-gradient(135deg,#f0fdf4 0%,#ffffff 70%);border-color:#dcf5e3}
+  .card.green .ic,.card.green .big{color:var(--green)}
+  .card.red{background:linear-gradient(135deg,#fef2f2 0%,#ffffff 70%);border-color:#fbe0e0}
+  .card.red .ic,.card.red .big{color:var(--red)}
+
+  /* ---------- Chart panel ---------- */
+  .panel{border:1px solid var(--line);border-radius:12px;padding:20px 22px}
+  .panel .ptitle{display:flex;align-items:center;gap:7px;font-size:15px;font-weight:700}
+  .panel .ptitle .info{color:#cbd0d8;display:flex}
+  .panel .psub{margin-top:6px;font-size:13px;color:var(--muted)}
+  .panel .psub b{color:#374151;font-weight:600}
+  .chart{margin-top:18px;width:100%}
+  .chart .grid line{stroke:#eef0f3;stroke-width:1}
+  .chart .axis text{fill:#9ca3af;font-size:11px;font-family:'Inter',sans-serif}
+  .chart .baseline{stroke:#3b82f6;stroke-width:1.5}
+
+  @media (max-width:1100px){.cards{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+
+  <!-- Top bar -->
+  <header class="topbar">
+    <div class="hamb"><span></span><span></span><span></span></div>
+    <div class="brand">Softtech Choice</div>
+    <div class="right">
+      <div class="avatar"></div>
+      <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+  </header>
+
+  <div class="shell">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="nav-item">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 6 10-6"/></svg>
+        Email Campaigns
+      </div>
+      <div class="nav-item">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+        Master Inbox
+      </div>
+      <div class="nav-item">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 5L2 7"/></svg>
+        Email Accounts
+      </div>
+      <div class="nav-item">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18"/><rect x="7" y="11" width="3" height="6"/><rect x="13" y="7" width="3" height="10"/></svg>
+        Global Analytics
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+
+      <div class="toolbar">
+        <div class="tab">Performance Metrics</div>
+        <div class="spacer"></div>
+        <div class="pill">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          2026-06-12 — 2026-06-15
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+        <div class="pill">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16M7 12h10M10 20h4"/></svg>
+          All Campaigns
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+      </div>
+
+      <!-- Success banner -->
+      <div class="banner">
+        <span class="check">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg>
+        </span>
+        Awesome! All data is loaded successfully and ready for you to explore.
+        <span class="x">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </span>
+      </div>
+
+      <!-- Stat cards -->
+      <div class="cards">
+        <div class="card purple">
+          <div class="head">
+            <span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 5L2 7"/></svg></span>
+            <span class="label">Emails Sent</span>
+            <span class="info"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></span>
+          </div>
+          <div class="big">0</div>
+          <div class="sub"><b>0</b> Leads (Active + Inactive)</div>
+        </div>
+
+        <div class="card purple">
+          <div class="head">
+            <span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 13V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v7"/><path d="m22 10-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 10"/><path d="M2 13v5a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5"/></svg></span>
+            <span class="label">Opened</span>
+            <span class="info"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></span>
+          </div>
+          <div class="big">0</div>
+          <div class="sub"><b>0.00%</b> Open Rate</div>
+        </div>
+
+        <div class="card teal">
+          <div class="head">
+            <span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/><path d="M8 12h8"/></svg></span>
+            <span class="label">Replied</span>
+            <span class="info"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></span>
+          </div>
+          <div class="big">0</div>
+          <div class="sub"><b>0.00%</b> Reply Rate</div>
+        </div>
+
+        <div class="card green">
+          <div class="head">
+            <span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8M12 6v2m0 8v2"/></svg></span>
+            <span class="label">Positive Reply</span>
+            <span class="info"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></span>
+          </div>
+          <div class="big">0</div>
+          <div class="sub"><b>0.00%</b> Positive Reply Rate</div>
+        </div>
+
+        <div class="card red">
+          <div class="head">
+            <span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 5L2 7"/><path d="m15 16 4 4m0-4-4 4"/></svg></span>
+            <span class="label">Bounced</span>
+            <span class="info"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></span>
+          </div>
+          <div class="big">0</div>
+          <div class="sub"><b>0.00%</b> Bounce Rate</div>
+        </div>
+      </div>
+
+      <!-- Engagement chart -->
+      <div class="panel">
+        <div class="ptitle">
+          Email Engagement Metrics
+          <span class="info"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></span>
+        </div>
+        <div class="psub">The data is displayed in <b>Etc/GMT(UTC)</b></div>
+
+        <svg class="chart" viewBox="0 0 1000 260" preserveAspectRatio="none" height="260">
+          <g class="grid">
+            <line x1="40" y1="20"  x2="990" y2="20"/>
+            <line x1="40" y1="66"  x2="990" y2="66"/>
+            <line x1="40" y1="112" x2="990" y2="112"/>
+            <line x1="40" y1="158" x2="990" y2="158"/>
+            <line x1="40" y1="204" x2="990" y2="204"/>
+            <line x1="40" y1="240" x2="990" y2="240"/>
+          </g>
+          <g class="axis">
+            <text x="28" y="24"  text-anchor="end">5</text>
+            <text x="28" y="70"  text-anchor="end">4</text>
+            <text x="28" y="116" text-anchor="end">3</text>
+            <text x="28" y="162" text-anchor="end">2</text>
+            <text x="28" y="208" text-anchor="end">1</text>
+            <text x="28" y="244" text-anchor="end">0</text>
+          </g>
+          <!-- flat zero series -->
+          <line class="baseline" x1="40" y1="240" x2="990" y2="240"/>
+        </svg>
+      </div>
+
+    </main>
+  </div>
+
+</body>
+</html>

@@ -1,21 +1,43 @@
-import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { AGENCY_NAME } from "@/lib/mock-data";
+import type { Workspace } from "@/lib/types";
+import { getProfile, getEffectiveRole } from "@/lib/auth";
+import { ClientSwitcher } from "./ClientSwitcher";
+import { UserMenu } from "./UserMenu";
 
-/** Global top bar: brand lockup + theme toggle. Sticky across the app. */
-export function Topbar() {
+export async function Topbar({
+  workspaces,
+  active,
+}: {
+  workspaces: Workspace[];
+  active: Workspace;
+}) {
+  const [profile, role] = await Promise.all([getProfile(), getEffectiveRole()]);
+  // super_admin / agency_admin can switch between clients; client_user cannot
+  const isAdmin = role === "super_admin" || role === "agency_admin";
+
   return (
-    <header className="sticky top-0 z-50 border-b border-line bg-bg/90 backdrop-blur-md">
-      <div className="flex h-14 items-center gap-4 px-7">
-        <div className="flex items-center gap-[10px] font-display text-[16px] font-extrabold tracking-[-0.02em]">
-          <span className="grid h-[22px] w-[22px] place-items-center rounded-chip bg-amber font-mono text-[13px] font-semibold text-amber-ink">
-            ◆
+    <header className="sticky top-0 z-30 flex h-[52px] items-center gap-4 bg-navy px-5 text-white">
+      <button className="flex flex-col gap-1 p-1" aria-label="Menu">
+        <span className="block h-0.5 w-5 rounded bg-white" />
+        <span className="block h-0.5 w-5 rounded bg-white" />
+        <span className="block h-0.5 w-5 rounded bg-white" />
+      </button>
+
+      <div className="text-[19px] font-bold tracking-tight">{AGENCY_NAME}</div>
+
+      <div className="ml-auto flex items-center gap-3">
+        {isAdmin ? (
+          <ClientSwitcher workspaces={workspaces} active={active} />
+        ) : (
+          <span className="rounded-lg border border-white/15 bg-white/10 px-3 py-1.5 text-[13px] font-medium text-white">
+            {active.name}
           </span>
-          Northbeam
-          <span className="font-mono text-[11px] font-normal tracking-normal text-faint">
-            / outbound terminal
-          </span>
-        </div>
-        <div className="flex-1" />
-        <ThemeToggle />
+        )}
+        <UserMenu
+          name={profile?.fullName ?? ""}
+          email={profile?.email ?? ""}
+          role={role}
+        />
       </div>
     </header>
   );

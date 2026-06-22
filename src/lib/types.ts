@@ -1,79 +1,119 @@
 /**
- * Domain types for Outbound Terminal.
- *
- * Shaped to mirror the Smartlead API surface so that swapping mock fixtures for
- * the live client (Phase 2/3) is a data-source change, not a UI change. Names
- * follow Smartlead vocabulary: campaigns, sequences, leads, replies.
+ * Domain models — Smartlead-shaped. These are the app's internal contract;
+ * the Smartlead client (lib/smartlead.ts) maps raw API payloads into these,
+ * and every screen/component consumes these shapes (never raw API JSON).
  */
 
-export type CampaignStatus = "live" | "warming" | "paused" | "completed";
+export type CampaignStatus =
+  | "active"
+  | "paused"
+  | "completed"
+  | "draft"
+  | "warming";
 
-export type ReplyIntent = "meeting" | "interested" | "later" | "not-interested";
-
-/** A single outbound campaign as the client sees it on the dashboard. */
-export interface Campaign {
-  id: string;
-  name: string;
-  /** e.g. "seq · 5 steps" or "warming · day 6" — short context line under the name */
-  detail: string;
-  status: CampaignStatus;
-  sent: number;
-  openRate: number; // 0–100
-  replyRate: number; // 0–100 (the money metric)
-  positive: number; // positive reply count
-  booked: number; // meetings booked
-}
-
-/** One tile in the command strip — a poster of a single live number. */
-export interface Metric {
-  key: string;
-  label: string;
-  /** preformatted display value, e.g. "48,210" or "7.8%" */
-  value: string;
-  /** sparkline points, 0–1 normalized; rendered right-to-latest */
-  spark?: number[];
-  /** period-over-period delta, e.g. "+18%" */
-  delta?: string;
-  deltaDir?: "up" | "down";
-  /** emphasize in amber — reserved for the one money metric (reply rate) */
-  hot?: boolean;
-  /** tint the value in the positive (mint) color */
-  positive?: boolean;
-}
-
-/** A positive/relevant reply surfaced in the live replies rail. */
-export interface Reply {
-  id: string;
-  name: string;
-  initials: string;
-  snippet: string;
-  timeAgo: string;
-  intent: ReplyIntent;
-}
-
-export type AlertLevel = "ok" | "warn" | "err";
-
-/** A deliverability / inbox-health signal. */
-export interface DeliverabilitySignal {
-  level: AlertLevel;
-  message: string;
-}
-
-/** The tenant currently in view (a client workspace, or the agency rollup). */
 export interface Workspace {
   id: string;
   name: string;
-  initials: string;
-  /** which surface this workspace is viewed through */
-  kind: "client" | "agency";
+  slug: string;
+  /** Smartlead white-label binding (set during super-admin onboarding). */
+  smartleadClientId?: number | null;
+  smartleadApiKey?: string | null;
+  status?: "active" | "paused" | "onboarding";
+  primaryDomain?: string | null;
 }
 
-/** Everything the client Overview screen needs, in one payload. */
-export interface ClientOverview {
-  workspace: Workspace;
-  syncedAgo: string;
-  metrics: Metric[];
-  campaigns: Campaign[];
-  replies: Reply[];
-  deliverability: DeliverabilitySignal[];
+/** The five headline metrics on the Performance Metrics screen. */
+export interface AnalyticsSummary {
+  emailsSent: number;
+  leads: number;
+  opened: number;
+  openRate: number; // 0..100
+  replied: number;
+  replyRate: number;
+  positiveReplies: number;
+  positiveReplyRate: number;
+  bounced: number;
+  bounceRate: number;
+}
+
+/** One point in the Email Engagement time series (per day, UTC). */
+export interface EngagementPoint {
+  date: string; // ISO yyyy-mm-dd
+  sent: number;
+  opened: number;
+  replied: number;
+  bounced: number;
+}
+
+export interface Campaign {
+  id: string;
+  name: string;
+  status: CampaignStatus;
+  createdAt: string; // ISO
+  leadCount: number;
+  sentCount: number;
+  openRate: number;
+  replyRate: number;
+  positiveReplyRate: number;
+  bounceRate: number;
+}
+
+export interface SequenceStep {
+  stepNumber: number;
+  subject: string;
+  delayDays: number;
+  sentCount: number;
+  openRate: number;
+  replyRate: number;
+}
+
+export interface CampaignDetail extends Campaign {
+  sequence: SequenceStep[];
+  engagement: EngagementPoint[];
+}
+
+export type ReplyCategory =
+  | "interested"
+  | "meeting_request"
+  | "not_interested"
+  | "neutral"
+  | "out_of_office"
+  | "wrong_person"
+  | "do_not_contact";
+
+export interface InboxMessage {
+  id: string;
+  leadEmail: string;
+  leadName: string;
+  leadCompany: string;
+  campaignId: string;
+  campaignName: string;
+  subject: string;
+  snippet: string;
+  body: string;
+  receivedAt: string; // ISO
+  category: ReplyCategory;
+  read: boolean;
+}
+
+export type EmailAccountStatus = "active" | "paused" | "error";
+export type WarmupStatus = "active" | "paused";
+
+export interface EmailAccount {
+  id: string;
+  fromEmail: string;
+  fromName: string;
+  provider: string;
+  status: EmailAccountStatus;
+  warmupStatus: WarmupStatus;
+  warmupReputation: number; // 0..100
+  dailyLimit: number;
+  sentToday: number;
+  deliverabilityScore: number; // 0..100
+}
+
+/** Filters carried in the URL on analytics/campaign screens. */
+export interface DateRange {
+  from: string; // ISO yyyy-mm-dd
+  to: string;
 }
