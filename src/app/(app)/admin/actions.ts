@@ -18,6 +18,26 @@ export interface ActionState {
 
 const CONFIRM_REDIRECT = `${APP_URL}/auth/confirm?next=/auth/set-password`;
 
+/**
+ * Build a server-verifiable set-password link from a generateLink result.
+ * The raw `action_link` sends the session back in a URL hash fragment, which our
+ * SSR /auth/confirm route can't read — so the user never gets the password form.
+ * Instead we construct a token_hash link that /auth/confirm verifies server-side
+ * via verifyOtp (which sets the session cookie correctly).
+ */
+type LinkProps = {
+  hashed_token?: string;
+  verification_type?: string;
+  action_link?: string;
+} | null | undefined;
+function accessLinkFrom(properties: LinkProps): string {
+  if (properties?.hashed_token) {
+    const type = properties.verification_type || "invite";
+    return `${APP_URL}/auth/confirm?token_hash=${properties.hashed_token}&type=${type}&next=/auth/set-password`;
+  }
+  return properties?.action_link ?? "";
+}
+
 function slugify(s: string): string {
   return s
     .toLowerCase()
@@ -75,7 +95,7 @@ export async function onboardClient(
     return { error: `Login creation failed: ${inviteErr?.message ?? "unknown"}` };
   }
   await admin.from("profiles").update({ role: "client_user", full_name: name }).eq("id", invite.user.id);
-  const inviteLink = invite.properties?.action_link ?? "";
+  const inviteLink = accessLinkFrom(invite.properties);
 
   // 3) workspace + membership
   const { data: ws, error: wsErr } = await admin
@@ -151,7 +171,7 @@ export async function inviteUserToWorkspace(
   revalidatePath(`/admin/clients/${workspaceId}`);
   return {
     ok: true,
-    link: g.data.properties?.action_link ?? "",
+    link: accessLinkFrom(g.data.properties),
     message: `Access link for ${email} (role: ${role}):`,
   };
 }
@@ -303,7 +323,7 @@ export async function generateAccessLink(
     options: { redirectTo: CONFIRM_REDIRECT },
   });
   if (g.error) return { error: `Couldn't generate link: ${g.error.message}` };
-  return { ok: true, link: g.data.properties?.action_link ?? "", message: `Access link for ${email}:` };
+  return { ok: true, link: accessLinkFrom(g.data.properties), message: `Access link for ${email}:` };
 }
 
 /** Connect an SMTP/IMAP sending mailbox to Smartlead (agency master account). */
