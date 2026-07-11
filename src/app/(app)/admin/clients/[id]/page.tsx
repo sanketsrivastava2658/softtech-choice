@@ -9,6 +9,7 @@ import { BrandingForm } from "@/components/admin/BrandingForm";
 import { InvoiceManager } from "@/components/admin/InvoiceManager";
 import { NotificationComposer } from "@/components/admin/NotificationComposer";
 import { MemberRoleControl } from "@/components/admin/MemberRoleControl";
+import { MemberAccessLink } from "@/components/admin/MemberAccessLink";
 
 function mask(key?: string | null): string {
   if (!key) return "—";
@@ -120,25 +121,30 @@ export default async function ClientDetailPage({
             {members.map((m) => (
               <li
                 key={m.id}
-                className="flex items-center gap-3 border-b border-line px-5 py-3 last:border-b-0"
+                className="flex flex-col gap-2 border-b border-line px-5 py-3 last:border-b-0"
               >
-                <span className="grid h-8 w-8 flex-none place-items-center rounded-full bg-canvas text-[11px] font-semibold text-strong">
-                  {(m.fullName || m.email || "?").charAt(0).toUpperCase()}
-                </span>
-                <div className="min-w-0">
-                  <div className="truncate text-[13px] font-medium text-ink">
-                    {m.fullName || m.email}
+                <div className="flex items-center gap-3">
+                  <span className="grid h-8 w-8 flex-none place-items-center rounded-full bg-canvas text-[11px] font-semibold text-strong">
+                    {(m.fullName || m.email || "?").charAt(0).toUpperCase()}
+                  </span>
+                  <div className="min-w-0">
+                    <div className="truncate text-[13px] font-medium text-ink">
+                      {m.fullName || m.email}
+                    </div>
+                    <div className="num truncate text-[12px] text-faint">{m.email}</div>
                   </div>
-                  <div className="num truncate text-[12px] text-faint">{m.email}</div>
-                </div>
-                <div className="ml-auto flex items-center gap-2">
-                  {m.role === "super_admin" || m.role === "agency_admin" ? (
-                    <span className="rounded-full border border-purple-line bg-purple-soft px-2.5 py-0.5 text-[11px] font-semibold text-purple">
-                      {m.role === "super_admin" ? "Super admin" : "Agency"}
-                    </span>
-                  ) : (
-                    <MemberRoleControl workspaceId={ws.id} userId={m.id} role={m.membershipRole} />
-                  )}
+                  <div className="ml-auto flex items-center gap-2">
+                    {m.role === "super_admin" || m.role === "agency_admin" ? (
+                      <span className="rounded-full border border-purple-line bg-purple-soft px-2.5 py-0.5 text-[11px] font-semibold text-purple">
+                        {m.role === "super_admin" ? "Super admin" : "Agency"}
+                      </span>
+                    ) : (
+                      <>
+                        <MemberRoleControl workspaceId={ws.id} userId={m.id} role={m.membershipRole} />
+                        <MemberAccessLink email={m.email} />
+                      </>
+                    )}
+                  </div>
                 </div>
               </li>
             ))}
