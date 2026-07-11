@@ -20,6 +20,60 @@ export interface Workspace {
   smartleadApiKey?: string | null;
   status?: "active" | "paused" | "onboarding";
   primaryDomain?: string | null;
+  /** White-label branding shown in the shell after a client logs in. */
+  displayName?: string | null;
+  logoUrl?: string | null;
+  brandColor?: string | null;
+}
+
+/** Per-company role — a user can hold a different role in each workspace. */
+export type MembershipRole = "owner" | "manager" | "viewer";
+
+export type LeadStatus =
+  | "new"
+  | "contacted"
+  | "replied"
+  | "interested"
+  | "qualified"
+  | "won"
+  | "lost";
+
+export interface Lead {
+  id: string;
+  email: string;
+  fullName: string;
+  company: string;
+  title: string;
+  campaignId: string | null;
+  campaignName: string;
+  status: LeadStatus;
+  source: string;
+  createdAt: string; // ISO
+}
+
+export type InvoiceStatus = "draft" | "due" | "paid" | "void";
+
+export interface Invoice {
+  id: string;
+  number: string;
+  amountCents: number;
+  currency: string;
+  status: InvoiceStatus;
+  issuedAt: string; // ISO yyyy-mm-dd
+  dueAt: string | null;
+  paidAt: string | null;
+  notes: string | null;
+}
+
+export type NotificationLevel = "info" | "success" | "warning" | "critical";
+
+export interface AppNotification {
+  id: string;
+  title: string;
+  body: string | null;
+  level: NotificationLevel;
+  readAt: string | null;
+  createdAt: string; // ISO
 }
 
 /** The five headline metrics on the Performance Metrics screen. */

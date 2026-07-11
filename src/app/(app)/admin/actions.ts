@@ -92,7 +92,10 @@ export async function onboardClient(
     .single();
   if (wsErr || !ws) return { error: `Workspace creation failed: ${wsErr?.message}` };
 
-  await admin.from("memberships").insert({ user_id: invite.user.id, workspace_id: ws.id });
+  // the first user of a client company is its Owner
+  await admin
+    .from("memberships")
+    .insert({ user_id: invite.user.id, workspace_id: ws.id, role: "owner" });
 
   revalidatePath("/admin");
   return {
@@ -100,6 +103,15 @@ export async function onboardClient(
     link: inviteLink,
     message: `Onboarded ${name}. Send ${email} this link to set a password and log in:`,
   };
+}
+
+const MEMBERSHIP_ROLES = ["owner", "manager", "viewer"] as const;
+type MembershipRole = (typeof MEMBERSHIP_ROLES)[number];
+function coerceRole(v: FormDataEntryValue | null): MembershipRole {
+  const s = String(v ?? "viewer");
+  return (MEMBERSHIP_ROLES as readonly string[]).includes(s)
+    ? (s as MembershipRole)
+    : "viewer";
 }
 
 /** Invite an (additional) user into an existing client workspace. */
@@ -110,6 +122,7 @@ export async function inviteUserToWorkspace(
   await requireSuperAdmin();
   const workspaceId = String(formData.get("workspace_id") ?? "");
   const email = String(formData.get("email") ?? "").trim();
+  const role = coerceRole(formData.get("role"));
   if (!email || !workspaceId) return { error: "Email is required." };
   if (!supabaseConfigured()) return { error: "Connect Supabase first." };
   const admin = createAdminClient();
@@ -130,13 +143,144 @@ export async function inviteUserToWorkspace(
   }
   if (g.error || !g.data.user) return { error: `Invite failed: ${g.error?.message}` };
 
-  await admin.from("memberships").upsert({ user_id: g.data.user.id, workspace_id: workspaceId });
+  await admin
+    .from("memberships")
+    .upsert({ user_id: g.data.user.id, workspace_id: workspaceId, role });
   revalidatePath(`/admin/clients/${workspaceId}`);
   return {
     ok: true,
     link: g.data.properties?.action_link ?? "",
-    message: `Access link for ${email}:`,
+    message: `Access link for ${email} (role: ${role}):`,
   };
+}
+
+/** Change an existing member's per-company role (owner/manager/viewer). */
+export async function updateMemberRole(
+  _prev: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  await requireSuperAdmin();
+  const workspaceId = String(formData.get("workspace_id") ?? "");
+  const userId = String(formData.get("user_id") ?? "");
+  const role = coerceRole(formData.get("role"));
+  if (!workspaceId || !userId) return { error: "Missing member." };
+  const admin = createAdminClient();
+  if (!admin) return { error: "SUPABASE_SERVICE_ROLE_KEY is not set." };
+
+  const { error } = await admin
+    .from("memberships")
+    .update({ role })
+    .eq("workspace_id", workspaceId)
+    .eq("user_id", userId);
+  if (error) return { error: `Couldn't update role: ${error.message}` };
+  revalidatePath(`/admin/clients/${workspaceId}`);
+  return { ok: true, message: `Role updated to ${role}.` };
+}
+
+/** Update a client's white-label branding (name / logo / accent color). */
+export async function updateBranding(
+  _prev: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  await requireSuperAdmin();
+  const workspaceId = String(formData.get("workspace_id") ?? "");
+  if (!workspaceId) return { error: "Missing workspace." };
+  const admin = createAdminClient();
+  if (!admin) return { error: "SUPABASE_SERVICE_ROLE_KEY is not set." };
+
+  const displayName = String(formData.get("display_name") ?? "").trim() || null;
+  const logoUrl = String(formData.get("logo_url") ?? "").trim() || null;
+  const brandColor = String(formData.get("brand_color") ?? "").trim() || null;
+  if (brandColor && !/^#[0-9a-fA-F]{6}$/.test(brandColor)) {
+    return { error: "Brand color must be a hex value like #7c3aed." };
+  }
+
+  const { error } = await admin
+    .from("workspaces")
+    .update({ display_name: displayName, logo_url: logoUrl, brand_color: brandColor })
+    .eq("id", workspaceId);
+  if (error) return { error: `Save failed: ${error.message}` };
+  revalidatePath(`/admin/clients/${workspaceId}`);
+  return { ok: true, message: "Branding saved." };
+}
+
+/** Issue an invoice for a client (super-admin only). */
+export async function createInvoice(
+  _prev: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  await requireSuperAdmin();
+  const workspaceId = String(formData.get("workspace_id") ?? "");
+  const number = String(formData.get("number") ?? "").trim();
+  const amount = Number(formData.get("amount") ?? 0);
+  const dueAt = String(formData.get("due_at") ?? "").trim() || null;
+  const notes = String(formData.get("notes") ?? "").trim() || null;
+  if (!workspaceId || !number) return { error: "Invoice number is required." };
+  if (!Number.isFinite(amount) || amount <= 0) return { error: "Enter a valid amount." };
+  const admin = createAdminClient();
+  if (!admin) return { error: "SUPABASE_SERVICE_ROLE_KEY is not set." };
+
+  const { error } = await admin.from("invoices").insert({
+    workspace_id: workspaceId,
+    number,
+    amount_cents: Math.round(amount * 100),
+    currency: String(formData.get("currency") ?? "USD").trim() || "USD",
+    status: "due",
+    due_at: dueAt,
+    notes,
+  });
+  if (error) return { error: `Couldn't create invoice: ${error.message}` };
+  revalidatePath(`/admin/clients/${workspaceId}`);
+  return { ok: true, message: `Invoice ${number} created.` };
+}
+
+/** Flip an invoice's status (draft/due/paid/void). */
+export async function setInvoiceStatus(
+  _prev: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  await requireSuperAdmin();
+  const id = String(formData.get("invoice_id") ?? "");
+  const workspaceId = String(formData.get("workspace_id") ?? "");
+  const status = String(formData.get("status") ?? "");
+  if (!id || !["draft", "due", "paid", "void"].includes(status)) {
+    return { error: "Invalid invoice update." };
+  }
+  const admin = createAdminClient();
+  if (!admin) return { error: "SUPABASE_SERVICE_ROLE_KEY is not set." };
+
+  const { error } = await admin
+    .from("invoices")
+    .update({ status, paid_at: status === "paid" ? new Date().toISOString() : null })
+    .eq("id", id);
+  if (error) return { error: `Update failed: ${error.message}` };
+  revalidatePath(`/admin/clients/${workspaceId}`);
+  return { ok: true, message: `Invoice marked ${status}.` };
+}
+
+/** Post a notification to a whole client workspace (super-admin only). */
+export async function postNotification(
+  _prev: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  await requireSuperAdmin();
+  const workspaceId = String(formData.get("workspace_id") ?? "");
+  const title = String(formData.get("title") ?? "").trim();
+  const body = String(formData.get("body") ?? "").trim() || null;
+  const level = String(formData.get("level") ?? "info");
+  if (!workspaceId || !title) return { error: "Title is required." };
+  if (!["info", "success", "warning", "critical"].includes(level)) {
+    return { error: "Invalid level." };
+  }
+  const admin = createAdminClient();
+  if (!admin) return { error: "SUPABASE_SERVICE_ROLE_KEY is not set." };
+
+  const { error } = await admin
+    .from("notifications")
+    .insert({ workspace_id: workspaceId, title, body, level });
+  if (error) return { error: `Couldn't post: ${error.message}` };
+  revalidatePath(`/admin/clients/${workspaceId}`);
+  return { ok: true, message: "Notification sent to the client." };
 }
 
 /** Regenerate a copyable access (set-password) link for an existing user. */

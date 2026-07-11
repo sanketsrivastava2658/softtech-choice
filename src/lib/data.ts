@@ -9,15 +9,24 @@
 import "server-only";
 import type {
   AnalyticsSummary,
+  AppNotification,
   Campaign,
   CampaignDetail,
   DateRange,
   EmailAccount,
   EngagementPoint,
   InboxMessage,
+  Invoice,
+  Lead,
   Workspace,
 } from "./types";
-import { getWorkspaceDataset, workspaces as mockWorkspaces } from "./mock-data";
+import {
+  getWorkspaceDataset,
+  mockInvoices,
+  mockLeads,
+  mockNotifications,
+  workspaces as mockWorkspaces,
+} from "./mock-data";
 import { clientForWorkspace } from "./credentials";
 import { supabaseConfigured } from "./supabase/env";
 import { createClient as createSupabaseServer } from "./supabase/server";
@@ -32,7 +41,13 @@ interface RawWorkspaceRow {
   smartlead_api_key: string | null;
   status: string | null;
   primary_domain: string | null;
+  display_name: string | null;
+  logo_url: string | null;
+  brand_color: string | null;
 }
+
+const WORKSPACE_COLUMNS =
+  "id, name, slug, smartlead_client_id, smartlead_api_key, status, primary_domain, display_name, logo_url, brand_color";
 
 function mapWorkspaceRow(r: RawWorkspaceRow): Workspace {
   return {
@@ -43,6 +58,9 @@ function mapWorkspaceRow(r: RawWorkspaceRow): Workspace {
     smartleadApiKey: r.smartlead_api_key,
     status: (r.status as Workspace["status"]) ?? "active",
     primaryDomain: r.primary_domain,
+    displayName: r.display_name,
+    logoUrl: r.logo_url,
+    brandColor: r.brand_color,
   };
 }
 
@@ -53,9 +71,7 @@ export async function listWorkspaces(): Promise<Workspace[]> {
       const sb = await createSupabaseServer();
       const { data } = await sb
         .from("workspaces")
-        .select(
-          "id, name, slug, smartlead_client_id, smartlead_api_key, status, primary_domain"
-        )
+        .select(WORKSPACE_COLUMNS)
         .order("name");
       if (data && data.length) return (data as RawWorkspaceRow[]).map(mapWorkspaceRow);
     } catch {
@@ -217,4 +233,101 @@ export async function getAccounts(workspaceId: string): Promise<EmailAccount[]> 
     }
   }
   return getWorkspaceDataset(workspaceId).accounts;
+}
+
+// ── portal tables (leads / invoices / notifications) ────────────────────
+// DB-backed and RLS-scoped: in a configured project we return the real rows
+// (possibly empty — the UI shows an honest empty state). Without Supabase we
+// return seeded demo rows so the portal is fully explorable offline.
+
+export async function getLeads(workspaceId: string): Promise<Lead[]> {
+  if (supabaseConfigured()) {
+    try {
+      const sb = await createSupabaseServer();
+      const { data } = await sb
+        .from("leads")
+        .select("id, email, full_name, company, title, campaign_id, status, source, created_at, campaigns(name)")
+        .eq("workspace_id", workspaceId)
+        .order("created_at", { ascending: false });
+      type Row = {
+        id: string; email: string; full_name: string | null; company: string | null;
+        title: string | null; campaign_id: string | null; status: string; source: string | null;
+        created_at: string; campaigns: { name: string } | null;
+      };
+      return ((data as Row[] | null) ?? []).map((r) => ({
+        id: r.id,
+        email: r.email,
+        fullName: r.full_name ?? "",
+        company: r.company ?? "",
+        title: r.title ?? "",
+        campaignId: r.campaign_id,
+        campaignName: r.campaigns?.name ?? "",
+        status: (r.status as Lead["status"]) ?? "new",
+        source: r.source ?? "",
+        createdAt: r.created_at,
+      }));
+    } catch {
+      return [];
+    }
+  }
+  return mockLeads(workspaceId, getWorkspaceDataset(workspaceId));
+}
+
+export async function getInvoices(workspaceId: string): Promise<Invoice[]> {
+  if (supabaseConfigured()) {
+    try {
+      const sb = await createSupabaseServer();
+      const { data } = await sb
+        .from("invoices")
+        .select("id, number, amount_cents, currency, status, issued_at, due_at, paid_at, notes")
+        .eq("workspace_id", workspaceId)
+        .order("issued_at", { ascending: false });
+      type Row = {
+        id: string; number: string; amount_cents: number; currency: string; status: string;
+        issued_at: string; due_at: string | null; paid_at: string | null; notes: string | null;
+      };
+      return ((data as Row[] | null) ?? []).map((r) => ({
+        id: r.id,
+        number: r.number,
+        amountCents: r.amount_cents,
+        currency: r.currency,
+        status: (r.status as Invoice["status"]) ?? "due",
+        issuedAt: r.issued_at,
+        dueAt: r.due_at,
+        paidAt: r.paid_at,
+        notes: r.notes,
+      }));
+    } catch {
+      return [];
+    }
+  }
+  return mockInvoices(workspaceId);
+}
+
+export async function getNotifications(workspaceId: string): Promise<AppNotification[]> {
+  if (supabaseConfigured()) {
+    try {
+      const sb = await createSupabaseServer();
+      const { data } = await sb
+        .from("notifications")
+        .select("id, title, body, level, read_at, created_at")
+        .eq("workspace_id", workspaceId)
+        .order("created_at", { ascending: false });
+      type Row = {
+        id: string; title: string; body: string | null; level: string;
+        read_at: string | null; created_at: string;
+      };
+      return ((data as Row[] | null) ?? []).map((r) => ({
+        id: r.id,
+        title: r.title,
+        body: r.body,
+        level: (r.level as AppNotification["level"]) ?? "info",
+        readAt: r.read_at,
+        createdAt: r.created_at,
+      }));
+    } catch {
+      return [];
+    }
+  }
+  return mockNotifications(workspaceId);
 }

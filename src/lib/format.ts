@@ -8,6 +8,14 @@ export function fmtPct(n: number, digits = 2): string {
   return `${n.toFixed(digits)}%`;
 }
 
+export function fmtMoney(cents: number, currency = "USD"): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency,
+    minimumFractionDigits: 2,
+  }).format(cents / 100);
+}
+
 export function fmtDate(iso: string): string {
   // yyyy-mm-dd, locale-stable (matches the screenshot's date pills)
   return iso.slice(0, 10);

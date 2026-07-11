@@ -1,10 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getWorkspace, getCampaigns, getAccounts } from "@/lib/data";
+import { getWorkspace, getCampaigns, getAccounts, getInvoices } from "@/lib/data";
 import { listWorkspaceMembers } from "@/lib/access";
 import { fmtInt } from "@/lib/format";
 import { Icon } from "@/components/ui/Icon";
 import { InviteUserForm } from "@/components/admin/InviteUserForm";
+import { BrandingForm } from "@/components/admin/BrandingForm";
+import { InvoiceManager } from "@/components/admin/InvoiceManager";
+import { NotificationComposer } from "@/components/admin/NotificationComposer";
+import { MemberRoleControl } from "@/components/admin/MemberRoleControl";
 
 function mask(key?: string | null): string {
   if (!key) return "—";
@@ -30,10 +34,11 @@ export default async function ClientDetailPage({
   const ws = await getWorkspace(id);
   if (!ws || ws.id !== id) notFound();
 
-  const [campaigns, accounts, members] = await Promise.all([
+  const [campaigns, accounts, members, invoices] = await Promise.all([
     getCampaigns(id),
     getAccounts(id),
     listWorkspaceMembers(id),
+    getInvoices(id),
   ]);
   const live = Boolean(ws.smartleadApiKey);
 
@@ -88,6 +93,14 @@ export default async function ClientDetailPage({
         </div>
       </div>
 
+      {/* white-label branding */}
+      <div className="overflow-hidden rounded-card border border-line bg-surface">
+        <div className="border-b border-line px-5 py-3 text-[13px] font-bold text-ink">
+          White-label branding
+        </div>
+        <BrandingForm ws={ws} />
+      </div>
+
       {/* users & access */}
       <div className="overflow-hidden rounded-card border border-line bg-surface">
         <div className="flex items-center justify-between border-b border-line px-5 py-3">
@@ -118,15 +131,15 @@ export default async function ClientDetailPage({
                   </div>
                   <div className="num truncate text-[12px] text-faint">{m.email}</div>
                 </div>
-                <span
-                  className={`ml-auto rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${
-                    m.role === "super_admin"
-                      ? "border-purple-line bg-purple-soft text-purple"
-                      : "border-line bg-canvas text-muted"
-                  }`}
-                >
-                  {m.role === "super_admin" ? "Super admin" : m.role === "agency_admin" ? "Agency" : "Client"}
-                </span>
+                <div className="ml-auto flex items-center gap-2">
+                  {m.role === "super_admin" || m.role === "agency_admin" ? (
+                    <span className="rounded-full border border-purple-line bg-purple-soft px-2.5 py-0.5 text-[11px] font-semibold text-purple">
+                      {m.role === "super_admin" ? "Super admin" : "Agency"}
+                    </span>
+                  ) : (
+                    <MemberRoleControl workspaceId={ws.id} userId={m.id} role={m.membershipRole} />
+                  )}
+                </div>
               </li>
             ))}
           </ul>
@@ -134,6 +147,10 @@ export default async function ClientDetailPage({
 
         <InviteUserForm workspaceId={ws.id} />
       </div>
+
+      {/* billing + notifications */}
+      <InvoiceManager workspaceId={ws.id} invoices={invoices} />
+      <NotificationComposer workspaceId={ws.id} />
 
       <p className="text-[12px] text-faint">
         Manage this client&apos;s campaigns and inbox by switching to their

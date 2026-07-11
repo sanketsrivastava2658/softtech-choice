@@ -12,7 +12,7 @@ export function InviteUserForm({ workspaceId }: { workspaceId: string }) {
 
   return (
     <div className="border-t border-line px-5 py-4">
-      <form action={action} className="flex items-end gap-2">
+      <form action={action} className="flex flex-wrap items-end gap-2">
         <input type="hidden" name="workspace_id" value={workspaceId} />
         <label className="flex flex-1 flex-col gap-1.5 text-[12.5px] font-medium text-strong">
           Invite a user to this client
@@ -23,6 +23,18 @@ export function InviteUserForm({ workspaceId }: { workspaceId: string }) {
             placeholder="person@client.com"
             className="rounded-lg border border-line px-3 py-2 text-[13.5px] outline-none focus:border-purple"
           />
+        </label>
+        <label className="flex flex-col gap-1.5 text-[12.5px] font-medium text-strong">
+          Role
+          <select
+            name="role"
+            defaultValue="viewer"
+            className="rounded-lg border border-line px-3 py-2 text-[13.5px] capitalize outline-none focus:border-purple"
+          >
+            <option value="owner">Owner</option>
+            <option value="manager">Manager</option>
+            <option value="viewer">Viewer</option>
+          </select>
         </label>
         <button
           type="submit"

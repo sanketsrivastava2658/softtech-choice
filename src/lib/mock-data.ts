@@ -9,21 +9,25 @@
 
 import type {
   AnalyticsSummary,
+  AppNotification,
   Campaign,
   CampaignDetail,
   CampaignStatus,
   EmailAccount,
   EngagementPoint,
   InboxMessage,
+  Invoice,
+  Lead,
+  LeadStatus,
   ReplyCategory,
   SequenceStep,
   Workspace,
 } from "./types";
 
 export const workspaces: Workspace[] = [
-  { id: "ws_acme", name: "Acme B2B", slug: "acme-b2b" },
-  { id: "ws_northwind", name: "Northwind SaaS", slug: "northwind-saas" },
-  { id: "ws_vertex", name: "Vertex Health", slug: "vertex-health" },
+  { id: "ws_acme", name: "Acme B2B", slug: "acme-b2b", brandColor: "#7c3aed" },
+  { id: "ws_northwind", name: "Northwind SaaS", slug: "northwind-saas", brandColor: "#0d9488" },
+  { id: "ws_vertex", name: "Vertex Health", slug: "vertex-health", brandColor: "#2563eb" },
 ];
 
 export const AGENCY_NAME = "Softtech Choice";
@@ -324,4 +328,86 @@ export function getWorkspaceDataset(workspaceId: string): WorkspaceDataset {
   };
   cache.set(workspaceId, ds);
   return ds;
+}
+
+// ── portal demo rows (leads / invoices / notifications) ─────────────────
+const LEAD_STATUSES: LeadStatus[] = [
+  "new", "contacted", "contacted", "replied", "interested",
+  "qualified", "new", "lost", "won", "contacted",
+];
+const LEAD_TITLES = [
+  "VP Sales", "Head of Growth", "Founder", "CTO", "RevOps Lead",
+  "Marketing Director", "COO", "Demand Gen Manager", "CEO", "SDR Manager",
+];
+
+export function mockLeads(workspaceId: string, ds: WorkspaceDataset): Lead[] {
+  const r = rng(seedFromString(workspaceId + ":leads"));
+  const out: Lead[] = [];
+  const n = 18 + Math.floor(r() * 14);
+  for (let i = 0; i < n; i++) {
+    const first = pick(r, FIRST);
+    const last = pick(r, LAST);
+    const company = pick(r, COMPANIES);
+    const campaign = pick(r, ds.campaigns);
+    out.push({
+      id: `lead_${workspaceId.slice(3)}_${i}`,
+      email: `${first.toLowerCase()}.${last.toLowerCase()}@${company
+        .toLowerCase()
+        .replace(/\s/g, "")}.com`,
+      fullName: `${first} ${last}`,
+      company,
+      title: pick(r, LEAD_TITLES),
+      campaignId: campaign.id,
+      campaignName: campaign.name,
+      status: LEAD_STATUSES[Math.floor(r() * LEAD_STATUSES.length)],
+      source: pick(r, ["Smartlead", "LinkedIn", "Import", "Website"]),
+      createdAt: isoDaysAgo(Math.round(between(r, 0, 60))),
+    });
+  }
+  return out.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+}
+
+export function mockInvoices(workspaceId: string): Invoice[] {
+  const r = rng(seedFromString(workspaceId + ":invoices"));
+  const out: Invoice[] = [];
+  const n = 4 + Math.floor(r() * 3);
+  const base = 1500 + Math.floor(r() * 6) * 500;
+  for (let i = 0; i < n; i++) {
+    const monthsAgo = n - 1 - i;
+    const issued = isoDaysAgo(monthsAgo * 30 + 2);
+    const due = isoDaysAgo(monthsAgo * 30 - 12);
+    // most recent invoice is still due; older ones are paid
+    const status: Invoice["status"] = i === n - 1 ? "due" : "paid";
+    out.push({
+      id: `inv_${workspaceId.slice(3)}_${i}`,
+      number: `INV-${2025}${String(i + 1).padStart(3, "0")}`,
+      amountCents: (base + Math.floor(r() * 8) * 250) * 100,
+      currency: "USD",
+      status,
+      issuedAt: issued,
+      dueAt: due,
+      paidAt: status === "paid" ? new Date(due).toISOString() : null,
+      notes: "Monthly retainer — outbound management",
+    });
+  }
+  return out.sort((a, b) => (a.issuedAt < b.issuedAt ? 1 : -1));
+}
+
+export function mockNotifications(workspaceId: string): AppNotification[] {
+  const r = rng(seedFromString(workspaceId + ":notifs"));
+  const seeds: Array<Pick<AppNotification, "title" | "body" | "level">> = [
+    { title: "New positive reply", body: "A lead replied 'interested' in your Series A CTOs campaign.", level: "success" },
+    { title: "Mailbox warmup complete", body: "go.acme.co finished warmup and is now sending at full volume.", level: "info" },
+    { title: "Invoice available", body: "Your latest monthly retainer invoice is ready to view.", level: "info" },
+    { title: "Bounce rate elevated", body: "RevOps Leaders bounce rate crossed 4% — review the list quality.", level: "warning" },
+    { title: "Campaign launched", body: "Q2 — SaaS Founders is now active across 6 mailboxes.", level: "success" },
+  ];
+  return seeds.map((s, i) => ({
+    id: `ntf_${workspaceId.slice(3)}_${i}`,
+    title: s.title,
+    body: s.body,
+    level: s.level,
+    readAt: r() > 0.5 ? isoHoursAgo(Math.round(between(r, 1, 40))) : null,
+    createdAt: isoHoursAgo(Math.round(between(r, 1, 96))),
+  }));
 }
