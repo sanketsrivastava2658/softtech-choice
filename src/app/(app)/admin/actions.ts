@@ -49,20 +49,20 @@ export async function onboardClient(
   const admin = createAdminClient();
   if (!admin) return { error: "SUPABASE_SERVICE_ROLE_KEY is not set." };
 
+  // 1) Smartlead white-label client — OPTIONAL. If the master key isn't set yet,
+  // onboard without a Smartlead binding; it can be linked later from the client
+  // page once the master key is saved in Settings.
   const master = await masterClient();
-  if (!master) {
-    return { error: "Set the master Smartlead API key in Settings before onboarding." };
-  }
-
-  // 1) Smartlead white-label client
   let smartleadClientId: number | null = null;
   let smartleadApiKey: string | null = null;
-  try {
-    const res = await master.createClient({ name, email });
-    smartleadClientId = res.id || null;
-    smartleadApiKey = res.apiKey || null;
-  } catch (e) {
-    return { error: `Smartlead client creation failed: ${(e as Error).message}` };
+  if (master) {
+    try {
+      const res = await master.createClient({ name, email });
+      smartleadClientId = res.id || null;
+      smartleadApiKey = res.apiKey || null;
+    } catch (e) {
+      return { error: `Smartlead client creation failed: ${(e as Error).message}` };
+    }
   }
 
   // 2) create the login + an invite link (profile row added by the signup trigger)
@@ -86,7 +86,7 @@ export async function onboardClient(
       smartlead_client_id: smartleadClientId,
       smartlead_api_key: smartleadApiKey,
       primary_domain: domain || null,
-      status: "active",
+      status: master ? "active" : "onboarding",
     })
     .select("id")
     .single();
@@ -101,7 +101,9 @@ export async function onboardClient(
   return {
     ok: true,
     link: inviteLink,
-    message: `Onboarded ${name}. Send ${email} this link to set a password and log in:`,
+    message: master
+      ? `Onboarded ${name}. Send ${email} this link to set a password and log in:`
+      : `Onboarded ${name} (no Smartlead key yet — the client shows demo data until you add the master key in Settings and link them). Send ${email} this link to set a password and log in:`,
   };
 }
 
